@@ -129,8 +129,8 @@ def tf_examples_dataset(
     local_files = local_files.shard(num_shards, shard_index)
     ds = local_files.interleave(
         dataset_fn,
-        num_parallel_calls=AUTOTUNE,
-        cycle_length=AUTOTUNE,
+        num_parallel_calls=1,
+        cycle_length=1,
         deterministic=deterministic,
     )
 
@@ -143,7 +143,7 @@ def tf_examples_dataset(
       ds = ds.shuffle(shuffle_buffer_size, seed=local_seed)
 
     ds = ds.map(
-        preprocess_fn, num_parallel_calls=AUTOTUNE, deterministic=deterministic
+        preprocess_fn, num_parallel_calls=1, deterministic=deterministic
     )
     if not batch_by_scenario:
       ds = ds.unbatch()
@@ -152,7 +152,7 @@ def tf_examples_dataset(
         ds = ds.batch(
             batch_size,
             drop_remainder=drop_remainder,
-            num_parallel_calls=AUTOTUNE,
+            num_parallel_calls=1,
             deterministic=deterministic,
         )
     return ds
@@ -162,7 +162,7 @@ def tf_examples_dataset(
   )
   indices = tf.data.Dataset.range(num_shards)
   dataset = indices.interleave(
-      make_dataset_fn, num_parallel_calls=AUTOTUNE, deterministic=deterministic
+      make_dataset_fn, num_parallel_calls=1, deterministic=deterministic
   )
 
   if tf_data_service_address is not None:
@@ -172,7 +172,8 @@ def tf_examples_dataset(
             service=tf_data_service_address,
         )
     )
-  return dataset.prefetch(AUTOTUNE)
+  # return dataset.prefetch(AUTOTUNE)
+  return dataset.prefetch(1)
 
 
 def get_data_generator(
